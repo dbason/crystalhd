@@ -26,11 +26,10 @@
  *
  ****************************************************************************/
 
-#include <stdint.h>
-
 #ifndef _BCM_LDIL_IF_H_
 #define _BCM_LDIL_IF_H_
 
+#include <stdint.h>
 #include "bc_dts_defs.h"
 #include "bc_dts_types.h"
 

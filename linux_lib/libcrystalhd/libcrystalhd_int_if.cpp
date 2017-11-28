@@ -738,7 +738,7 @@ DtsDevMemRd(
     )
 {
 	uint8_t					*pXferBuff;
-	uint32_t					IOcCode,size_in_dword;
+	uint32_t					size_in_dword;
 	BC_IOCTL_DATA		*pIoctlData;
 	BC_CMD_DEV_MEM		*pMemAccessRd;
 	uint32_t					BytesReturned,AllocSz;
@@ -782,7 +782,6 @@ DtsDevMemRd(
 	memset(pXferBuff,'a',BuffSz);
 	/* The size is passed in Bytes*/
 	pMemAccessRd->NumDwords = size_in_dword;
-	IOcCode = BCM_IOC_MEM_RD;
 	if(!DtsDrvIoctl(hDevice,
 					BCM_IOC_MEM_RD,
 					pIoctlData,
@@ -821,7 +820,7 @@ DtsDevMemWr(
     )
 {
 	uint8_t					*pXferBuff;
-	uint32_t					IOcCode,size_in_dword;
+	uint32_t					size_in_dword;
 	BC_IOCTL_DATA		*pIoctlData;
 	BC_CMD_DEV_MEM		*pMemAccessRd;
 	uint32_t					BytesReturned,AllocSz;
@@ -868,7 +867,6 @@ DtsDevMemWr(
 	memcpy(pXferBuff,Buffer,BuffSz);
 	/* The size is passed in Bytes*/
 	pMemAccessRd->NumDwords = size_in_dword;
-	IOcCode = BCM_IOC_MEM_WR;
 	if(!DtsDrvIoctl(hDevice,
 					BCM_IOC_MEM_WR,
 					pIoctlData,
@@ -876,7 +874,7 @@ DtsDevMemWr(
 					pIoctlData,
 					AllocSz,
 					(LPDWORD)&BytesReturned,
-					NULL))
+					0))
 	{
 		DebugLog_Trace(LDIL_DBG,"DtsDevMemWr: DeviceIoControl Failed\n");
 		return BC_STS_ERROR;
@@ -1215,7 +1213,7 @@ DtsCopyRawDataToOutBuff(DTS_LIB_CONTEXT	*Ctx,
 	uint32_t	y,lDestStride=0;
 	uint8_t	*pSrc = NULL, *pDest=NULL;
 	uint32_t	dstWidthInPixels, dstHeightInPixels;
-	uint32_t srcWidthInPixels = 0, srcHeightInPixels;
+	uint32_t srcWidthInPixels = 0;
 	BC_STATUS	Sts = BC_STS_SUCCESS;
 
 	if ( (Sts = DtsChkYUVSizes(Ctx,Vout,Vin)) != BC_STS_SUCCESS)
@@ -1240,7 +1238,6 @@ DtsCopyRawDataToOutBuff(DTS_LIB_CONTEXT	*Ctx,
 		}
 #endif
 		srcWidthInPixels = Ctx->HWOutPicWidth;
-		srcHeightInPixels = dstHeightInPixels;
 	} else {
 		dstWidthInPixels = Vin->PicInfo.width;
 		dstHeightInPixels = Vin->PicInfo.height;
@@ -1280,7 +1277,7 @@ BC_STATUS DtsCopyNV12ToYV12(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_
 	uint32_t	x,y,lDestStrideY=0, lDestStrideUV=0;
 	uint8_t	*pSrc = NULL, *pDest=NULL;
 	uint32_t	dstWidthInPixels, dstHeightInPixels;
-	uint32_t srcWidthInPixels, srcHeightInPixels;
+	uint32_t srcWidthInPixels;
 
 
 	if ( (Sts = DtsChkYUVSizes(Ctx,Vout,Vin)) != BC_STS_SUCCESS)
@@ -1308,7 +1305,6 @@ BC_STATUS DtsCopyNV12ToYV12(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_
 			return BC_STS_IO_XFR_ERROR;
 		}
 		srcWidthInPixels = Ctx->HWOutPicWidth;
-		srcHeightInPixels = dstHeightInPixels;
 
 		//copy luma
 		pDest = Vout->Ybuff;
@@ -1363,7 +1359,7 @@ BC_STATUS DtsCopyNV12(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_PROC_O
 	uint32_t y,lDestStrideY=0,lDestStrideUV=0;
 	uint8_t	*pSrc = NULL, *pDest=NULL;
 	uint32_t dstWidthInPixels, dstHeightInPixels;
-	uint32_t srcWidthInPixels=0, srcHeightInPixels;
+	uint32_t srcWidthInPixels=0;
 
 	BC_STATUS	Sts = BC_STS_SUCCESS;
 
@@ -1387,7 +1383,6 @@ BC_STATUS DtsCopyNV12(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_PROC_O
 			(Vout->UVBuffDoneSz < (dstWidthInPixels * dstHeightInPixels/2 / 4)))
 			return BC_STS_IO_XFR_ERROR;
 		srcWidthInPixels = Ctx->HWOutPicWidth;
-		srcHeightInPixels = dstHeightInPixels;
 	} else {
 		dstWidthInPixels = Vin->PicInfo.width;
 		dstHeightInPixels = Vin->PicInfo.height;
@@ -1467,6 +1462,7 @@ static void fast_memcpy(uint8_t *dst, const uint8_t *src, uint32_t count)
 		*dst++ = *src++;
 }
 
+#if 0
 // this is not good.
 // if we have 3 buffers, we cannot assume V is after U
 static BC_STATUS DtsCopy422ToYV12(uint8_t *dstY, uint8_t *dstUV, const uint8_t *srcY, uint32_t srcWidth, uint32_t dstWidth, uint32_t height, uint32_t strideY, uint32_t strideUV)
@@ -1476,6 +1472,7 @@ static BC_STATUS DtsCopy422ToYV12(uint8_t *dstY, uint8_t *dstUV, const uint8_t *
 	// if we have 3 destination buffers, there's no guarantee that V buffer is derivable from UV pointer.
 	return BC_STS_INV_ARG;
 }
+#endif /*0*/
 
 // this is just a memcpy
 static BC_STATUS DtsCopy422ToYUY2(uint8_t *dstY, uint8_t *dstUV, const uint8_t *srcY, uint32_t srcWidth, uint32_t dstWidth, uint32_t height, uint32_t strideY, uint32_t strideUV)
@@ -1670,6 +1667,7 @@ static BC_STATUS DtsCopy422ToNV12(uint8_t *dstY, uint8_t *dstUV, const uint8_t *
 }
 
 
+#if 0
 // this is not good.
 // if we have 3 textures, we cannot assume V is after U
 static BC_STATUS DtsCopy420ToYV12(uint8_t *dstY, uint8_t *dstUV, const uint8_t *srcY, const uint8_t *srcUV, uint32_t srcWidth, uint32_t dstWidth, uint32_t height, uint32_t strideY, uint32_t strideUV)
@@ -1678,6 +1676,7 @@ static BC_STATUS DtsCopy420ToYV12(uint8_t *dstY, uint8_t *dstUV, const uint8_t *
 	// NOTE: if we want to support this porperly, we will need to add a Vbuffer pointer
 	return BC_STS_INV_ARG;
 }
+#endif /*0*/
 
 static BC_STATUS DtsCopy420ToYUY2(uint8_t *dstY, uint8_t *dstUV, const uint8_t *srcY, const uint8_t *srcUV, uint32_t srcWidth, uint32_t dstWidth, uint32_t height, uint32_t strideY, uint32_t strideUV)
 {

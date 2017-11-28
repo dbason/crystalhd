@@ -73,7 +73,7 @@ struct crystalhd_dio_user_info {
 	uint32_t		y_done_sz;
 	uint32_t		uv_done_sz;
 	uint32_t		comp_flags;
-	BC_OUTPUT_FORMAT	b422mode;
+	uint32_t		b422mode;
 };
 
 struct crystalhd_dio_req {
